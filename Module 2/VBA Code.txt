@@ -1,0 +1,98 @@
+Sub StockAnalysis()
+
+    Dim ws As Worksheet
+    Dim LastRow As Long
+    Dim StockTicker As String
+    Dim InitialOpenPrice As Double
+    Dim FinalClosePrice As Double
+    Dim AnnualChange As Double
+    Dim AnnualPercentChange As Double
+    Dim AccumulatedVolume As Double
+    Dim SummaryCounter As Long
+    Dim MaxIncreaseTicker As String
+    Dim MaxDecreaseTicker As String
+    Dim MaxVolumeTicker As String
+    Dim MaxIncreaseValue As Double
+    Dim MaxDecreaseValue As Double
+    Dim MaxVolumeValue As Double
+    
+    ' Loop through each worksheet
+    For Each ws In ThisWorkbook.Worksheets
+        
+        ' Initialize variables for each worksheet
+        LastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+        SummaryCounter = 2
+        MaxIncreaseValue = 0
+        MaxDecreaseValue = 0
+        MaxVolumeValue = 0
+        
+        ' Set column headers for summary table
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Volume"
+        
+        ' Loop through each row of data
+        For i = 2 To LastRow
+            StockTicker = ws.Cells(i, 1).Value
+            InitialOpenPrice = ws.Cells(i, 3).Value
+            FinalClosePrice = ws.Cells(i, 6).Value
+            AccumulatedVolume = ws.Cells(i, 7).Value
+            
+            ' Calculate Annual Change and Percent Change
+            AnnualChange = FinalClosePrice - InitialOpenPrice
+            If InitialOpenPrice <> 0 Then
+                AnnualPercentChange = (FinalClosePrice - InitialOpenPrice) / InitialOpenPrice
+            Else
+                AnnualPercentChange = 0
+            End If
+            
+            ' Output data to summary table
+            ws.Cells(SummaryCounter, 9).Value = StockTicker
+            ws.Cells(SummaryCounter, 10).Value = AnnualChange
+            ws.Cells(SummaryCounter, 11).Value = AnnualPercentChange
+            ws.Cells(SummaryCounter, 12).Value = AccumulatedVolume
+            
+            ' Apply conditional formatting to highlight positive and negative changes
+            If AnnualChange > 0 Then
+                ws.Cells(SummaryCounter, 10).Interior.Color = RGB(0, 255, 0) ' Green
+            ElseIf AnnualChange < 0 Then
+                ws.Cells(SummaryCounter, 10).Interior.Color = RGB(255, 0, 0) ' Red
+            End If
+            
+            ' Update variables for max increase, decrease, and volume
+            If AnnualPercentChange > MaxIncreaseValue Then
+                MaxIncreaseValue = AnnualPercentChange
+                MaxIncreaseTicker = StockTicker
+            ElseIf AnnualPercentChange < MaxDecreaseValue Then
+                MaxDecreaseValue = AnnualPercentChange
+                MaxDecreaseTicker = StockTicker
+            End If
+            If AccumulatedVolume > MaxVolumeValue Then
+                MaxVolumeValue = AccumulatedVolume
+                MaxVolumeTicker = StockTicker
+            End If
+            
+            ' Move to next row in summary table
+            SummaryCounter = SummaryCounter + 1
+        Next i
+        
+        ' Output max increase, decrease, and volume to summary table
+        ws.Cells(2, 16).Value = "Greatest % Increase"
+        ws.Cells(2, 17).Value = MaxIncreaseTicker
+        ws.Cells(2, 18).Value = Format(MaxIncreaseValue, "0.00%")
+        ws.Cells(3, 16).Value = "Greatest % Decrease"
+        ws.Cells(3, 17).Value = MaxDecreaseTicker
+        ws.Cells(3, 18).Value = Format(MaxDecreaseValue, "0.00%")
+        ws.Cells(4, 16).Value = "Greatest Total Volume"
+        ws.Cells(4, 17).Value = MaxVolumeTicker
+        ws.Cells(4, 18).Value = MaxVolumeValue
+        
+        ' Apply conditional formatting to highlight max increase and decrease
+        ws.Cells(2, 18).Interior.Color = RGB(0, 255, 0) ' Green
+        ws.Cells(3, 18).Interior.Color = RGB(255, 0, 0) ' Red
+        
+    Next ws
+
+End Sub
+
